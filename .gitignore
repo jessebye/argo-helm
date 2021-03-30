@@ -1,4 +1,6 @@
 output
 .vscode
 .DS_Store
-*.tgz
+.idea
+**/*.tgz
+**/charts/*/charts

@@ -1,3 +1,5 @@
+{{- if not .Values.singleNamespace }}
+
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
@@ -43,12 +45,12 @@ rules:
       - workflows/finalizers
       - workflowtemplates
       - workflowtemplates/finalizers
-      - gateways
-      - gateways/finalizers
       - sensors
       - sensors/finalizers
       - eventsources
       - eventsources/finalizers
+      - eventbus
+      - eventbus/finalizers
   - apiGroups:
       - ""
     resources:
@@ -83,6 +85,7 @@ rules:
       - "apps"
     resources:
       - deployments
+      - statefulsets
     verbs:
       - create
       - get
@@ -92,3 +95,4 @@ rules:
       - patch
       - delete
 
+{{- end }}

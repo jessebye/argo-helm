@@ -6,9 +6,9 @@ items:
   - apiVersion: argoproj.io/v1alpha1
     kind: AppProject
     metadata:
-      {{- if .additionalProjects }}
+      {{- if .additionalAnnotations }}
       annotations:
-      {{- range $key, $value := .additionalProjects }}
+      {{- range $key, $value := .additionalAnnotations }}
         {{ $key }}: {{ $value | quote }}
       {{- end }}
       {{- end }}
@@ -34,6 +34,10 @@ items:
       namespaceResourceBlacklist:
 {{- toYaml .namespaceResourceBlacklist | nindent 8 }}
       {{- end }}
+      {{- if .namespaceResourceWhitelist }}
+      namespaceResourceWhitelist:
+{{- toYaml .namespaceResourceWhitelist | nindent 8 }}
+      {{- end }}
       {{- if .orphanedResources }}
       orphanedResources:
 {{- toYaml .orphanedResources | nindent 8 }}
@@ -41,6 +45,10 @@ items:
       {{- if .roles }}
       roles:
 {{- toYaml .roles | nindent 8 }}
+      {{- end }}
+      {{- if .syncWindows }}
+      syncWindows:
+{{- toYaml .syncWindows | nindent 8 }}
       {{- end }}
 {{- end }}
 {{- end }}

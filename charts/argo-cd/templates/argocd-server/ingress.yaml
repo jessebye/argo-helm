@@ -1,8 +1,13 @@
 {{- if .Values.server.ingress.enabled -}}
 {{- $serviceName := include "argo-cd.server.fullname" . -}}
-{{- $servicePort := .Values.server.service.servicePortHttp -}}
+{{- $servicePort := ternary .Values.server.service.servicePortHttps .Values.server.service.servicePortHttp .Values.server.ingress.https -}}
 {{- $paths := .Values.server.ingress.paths -}}
+{{- $extraPaths := .Values.server.ingress.extraPaths -}}
+{{- if .Capabilities.APIVersions.Has "networking.k8s.io/v1beta1" }}
+apiVersion: networking.k8s.io/v1beta1
+{{ else }}
 apiVersion: extensions/v1beta1
+{{ end -}}
 kind: Ingress
 metadata:
 {{- if .Values.server.ingress.annotations }}
@@ -13,12 +18,7 @@ metadata:
 {{- end }}
   name: {{ template "argo-cd.server.fullname" . }}
   labels:
-    app.kubernetes.io/name: {{ include "argo-cd.name" . }}-{{ .Values.server.name }}
-    helm.sh/chart: {{ include "argo-cd.chart" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/part-of: argocd
-    app.kubernetes.io/component: {{ .Values.server.name }}
+    {{- include "argo-cd.labels" (dict "context" . "component" .Values.server.name "name" .Values.server.name) | nindent 4 }}
 {{- if .Values.server.ingress.labels }}
 {{- toYaml .Values.server.ingress.labels | nindent 4 }}
 {{- end }}
@@ -29,6 +29,9 @@ spec:
     - host: {{ $host }}
       http:
         paths:
+  {{- if $extraPaths }}
+  {{- toYaml $extraPaths | nindent 10 }}
+  {{- end }}
   {{- range $p := $paths }}
           - path: {{ $p }}
             backend:
@@ -39,6 +42,9 @@ spec:
   {{- else }}
     - http:
         paths:
+  {{- if $extraPaths }}
+  {{- toYaml $extraPaths | nindent 10 }}
+  {{- end }}
   {{- range $p := $paths }}
           - path: {{ $p }}
             backend:
